@@ -4,11 +4,13 @@ import com.moneromint.solo.stratum.StratumChannelInitializer;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.ChannelOption;
 import io.netty.channel.EventLoopGroup;
+import io.netty.channel.ServerChannel;
 import io.netty.channel.epoll.Epoll;
 import io.netty.channel.epoll.EpollEventLoopGroup;
 import io.netty.channel.epoll.EpollServerSocketChannel;
 import io.netty.channel.group.DefaultChannelGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
+import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.util.concurrent.GlobalEventExecutor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -47,14 +49,17 @@ public class Main {
 
         final EventLoopGroup parentGroup;
         final EventLoopGroup childGroup;
+        final Class<? extends ServerChannel> channelClass;
 
         if (Epoll.isAvailable()) {
             parentGroup = new EpollEventLoopGroup(1);
             childGroup = new EpollEventLoopGroup(threads);
+            channelClass = EpollServerSocketChannel.class;
         } else {
             LOGGER.warn("Native transport not available; falling back to NIO");
             parentGroup = new NioEventLoopGroup(1);
             childGroup = new NioEventLoopGroup(threads);
+            channelClass = NioServerSocketChannel.class;
         }
 
         // TODO: GlobalEventExecutor not suitable.
@@ -71,7 +76,7 @@ public class Main {
         final var bootstrap = new ServerBootstrap();
         bootstrap.group(parentGroup, childGroup);
         bootstrap.option(ChannelOption.SO_BACKLOG, 128);
-        bootstrap.channel(EpollServerSocketChannel.class);
+        bootstrap.channel(channelClass);
         bootstrap.childHandler(new StratumChannelInitializer<>(activeMiners, blockTemplateUpdater, daemon));
         bootstrap.childOption(ChannelOption.SO_KEEPALIVE, true);
 
