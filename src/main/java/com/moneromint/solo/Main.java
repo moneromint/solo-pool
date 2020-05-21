@@ -14,7 +14,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import uk.offtopica.monerorpc.daemon.MoneroDaemonRpcClient;
 
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.net.URI;
+import java.util.Properties;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
@@ -25,6 +29,18 @@ public class Main {
     private static final Logger LOGGER = LoggerFactory.getLogger(Main.class);
 
     public static void main(String[] args) throws InterruptedException {
+        if (args.length != 1) {
+            System.err.println("Missing argument for properties path");
+            System.exit(1);
+        }
+
+        Properties properties = new Properties();
+        try (InputStream is = new FileInputStream(args[0])) {
+            properties.load(is);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
         // TODO: Configuration value.
         final int threads = Runtime.getRuntime().availableProcessors();
         LOGGER.info("Using {} threads", threads);
@@ -44,11 +60,9 @@ public class Main {
         // TODO: GlobalEventExecutor not suitable.
         final var activeMiners = new DefaultChannelGroup(GlobalEventExecutor.INSTANCE);
 
-        final var daemon = new MoneroDaemonRpcClient(URI.create("http://node.xmr.to:38081/json_rpc"));
+        final var daemon = new MoneroDaemonRpcClient(URI.create(properties.getProperty("com.moneromint.solo.daemon")));
 
-        // TODO: Configuration value.
-        final String wallet =
-                "59McWTPGc745SRWrSMoh8oTjoXoQq6sPUgKZ66dQWXuKFQ2q19h9gvhJNZcFTizcnT12r63NFgHiGd6gBCjabzmzHAMoyD6";
+        final String wallet = properties.getProperty("com.moneromint.solo.wallet");
 
         final var blockTemplateUpdater = new BlockTemplateUpdater(daemon, wallet, activeMiners);
         final var updateScheduler = Executors.newScheduledThreadPool(1);
@@ -61,8 +75,7 @@ public class Main {
         bootstrap.childHandler(new StratumChannelInitializer<>(activeMiners, blockTemplateUpdater, daemon));
         bootstrap.childOption(ChannelOption.SO_KEEPALIVE, true);
 
-        // TODO: Configuration value.
-        final int port = 3333;
+        final int port = Integer.parseInt(properties.getProperty("com.moneromint.solo.port"));
         LOGGER.info("Binding on *:{}", port);
         bootstrap.bind(port).channel().closeFuture().sync();
     }
