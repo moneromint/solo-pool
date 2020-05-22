@@ -17,7 +17,10 @@ public class ShareProcessor {
     }
 
     public ShareStatus processShare(Miner miner, Job job, byte[] result, byte[] nonce) {
-        // TODO: Validate nonce and result length.
+        if (result.length != 32 || nonce.length != 4) {
+            return ShareStatus.INVALID;
+        }
+
         // TODO: Validate result hash.
 
         final Difficulty shareDifficulty = Difficulty.ofShare(result);
