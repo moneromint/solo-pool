@@ -1,10 +1,12 @@
 package com.moneromint.solo.stratum;
 
-import com.moneromint.solo.*;
+import com.moneromint.solo.BlockTemplateUpdater;
+import com.moneromint.solo.Miner;
+import com.moneromint.solo.NewBlockTemplateEvent;
+import com.moneromint.solo.ShareProcessor;
 import com.moneromint.solo.stratum.message.StratumLoginParams;
 import com.moneromint.solo.stratum.message.StratumRequest;
 import com.moneromint.solo.stratum.message.StratumSubmitParams;
-import com.moneromint.solo.utils.BlockTemplateUtils;
 import com.moneromint.solo.utils.HexUtils;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
@@ -14,7 +16,6 @@ import io.netty.handler.timeout.IdleStateEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import uk.offtopica.monerorpc.daemon.BlockTemplate;
-import uk.offtopica.monerorpc.daemon.MoneroDaemonRpcClient;
 
 import java.util.Map;
 
@@ -23,15 +24,15 @@ public class StratumServerHandler extends ChannelInboundHandlerAdapter {
 
     private final ChannelGroup activeMiners;
     private final BlockTemplateUpdater blockTemplateUpdater;
-    private final MoneroDaemonRpcClient daemon;
+    private final ShareProcessor shareProcessor;
 
     private Miner miner;
 
     public StratumServerHandler(ChannelGroup activeMiners, BlockTemplateUpdater blockTemplateUpdater,
-                                MoneroDaemonRpcClient daemon) {
+                                ShareProcessor shareProcessor) {
         this.activeMiners = activeMiners;
         this.blockTemplateUpdater = blockTemplateUpdater;
-        this.daemon = daemon;
+        this.shareProcessor = shareProcessor;
     }
 
     private void login(ChannelHandlerContext ctx, StratumRequest<StratumLoginParams> request) {
@@ -63,14 +64,11 @@ public class StratumServerHandler extends ChannelInboundHandlerAdapter {
 
     private void submit(ChannelHandlerContext ctx, StratumRequest<StratumSubmitParams> request) {
         // TODO: Check that miner is authenticated.
-        // TODO: Extract this logic to a share processor class.
-        // TODO: Validate nonce.
-        // TODO: Validate result hash.
 
-        final Difficulty shareDifficulty;
+        final byte[] result;
         final byte[] nonce;
         try {
-            shareDifficulty = Difficulty.ofShare(HexUtils.hexStringToByteArray(request.getParams().getResult()));
+            result = HexUtils.hexStringToByteArray(request.getParams().getResult());
             nonce = HexUtils.hexStringToByteArray(request.getParams().getNonce());
         } catch (HexUtils.InvalidHexStringException e) {
             ctx.writeAndFlush(Map.of(
@@ -83,37 +81,19 @@ public class StratumServerHandler extends ChannelInboundHandlerAdapter {
             return;
         }
 
-        // If the share difficulty is greater than or equal to the network difficulty...
-        if (shareDifficulty.getDifficulty().compareTo(miner.getJob().getBlockTemplate().getDifficulty()) >= 0) {
-            LOGGER.info("Found block at height {}", miner.getJob().getHeight());
-            final var completedBlob = BlockTemplateUtils.withExtra(miner.getJob().getBlockTemplate(),
-                    Main.INSTANCE_ID, miner.getId(), nonce);
-            daemon.submitBlock(completedBlob)
-                    .thenRun(() -> {
-                        LOGGER.trace("Successfully submitted block!");
-                        blockTemplateUpdater.update();
-                    })
-                    .exceptionally(e -> {
-                        LOGGER.error("Failed to submit block", e);
-                        return null;
-                    });
-        }
+        var status = shareProcessor.processShare(miner, miner.getJob(), result, nonce);
 
-        // If the share difficulty is less than the job difficulty...
-        if (shareDifficulty.compareTo(miner.getJob().getDifficulty()) < 0) {
-            LOGGER.trace("Invalid share {}", ctx.channel().remoteAddress());
-            // TODO: Increment invalid share counter.
+        if (status != ShareProcessor.ShareStatus.VALID) {
             ctx.writeAndFlush(Map.of(
                     "id", request.getId(),
                     "error", Map.of(
                             "code", -1,
-                            "message", "Low difficulty share"
+                            // Add message field to status.
+                            "message", status.toString()
                     )
             ));
             return;
         }
-
-        // TODO: Increment valid share counter.
 
         ctx.writeAndFlush(Map.of(
                 "id", request.getId(),

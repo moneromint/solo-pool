@@ -73,11 +73,13 @@ public class Main {
         final var updateScheduler = Executors.newScheduledThreadPool(1);
         updateScheduler.scheduleAtFixedRate(blockTemplateUpdater::update, 0, 10, TimeUnit.SECONDS);
 
+        final var shareProcessor = new ShareProcessor(blockTemplateUpdater, daemon);
+
         final var bootstrap = new ServerBootstrap();
         bootstrap.group(parentGroup, childGroup);
         bootstrap.option(ChannelOption.SO_BACKLOG, 128);
         bootstrap.channel(channelClass);
-        bootstrap.childHandler(new StratumChannelInitializer<>(activeMiners, blockTemplateUpdater, daemon));
+        bootstrap.childHandler(new StratumChannelInitializer<>(activeMiners, blockTemplateUpdater, shareProcessor));
         bootstrap.childOption(ChannelOption.SO_KEEPALIVE, true);
 
         final int port = Integer.parseInt(properties.getProperty("com.moneromint.solo.port"));
