@@ -52,6 +52,19 @@ public class StratumServerHandler extends ChannelInboundHandlerAdapter {
                 request.getParams().getPass(),
                 request.getParams().getAgent());
 
+        if (request.getParams().getAgent() != null
+                && request.getParams().getAgent().contains("xmr-node-proxy")) {
+            ctx.writeAndFlush(Map.of(
+                    "id", request.getId(),
+                    "error", Map.of(
+                            "code", -1,
+                            "message", "xmr-node-proxy is not supported by this pool"
+                    )
+            ));
+            ctx.close();
+            return;
+        }
+
         miner = Miner.create(request.getParams().getLogin(), request.getParams().getPass());
         final var job = miner.createAndSetJob(blockTemplateUpdater.getLastBlockTemplate());
 
