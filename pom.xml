@@ -121,6 +121,31 @@
                 <artifactId>maven-surefire-plugin</artifactId>
                 <version>3.0.0-M4</version>
             </plugin>
+
+            <plugin>
+                <groupId>com.google.cloud.tools</groupId>
+                <artifactId>jib-maven-plugin</artifactId>
+                <version>2.3.0</version>
+                <configuration>
+                    <to>
+                        <image>moneromint/solo-pool</image>
+                    </to>
+                    <from>
+                        <image>openjdk:14</image>
+                    </from>
+                    <container>
+                        <entrypoint>/entrypoint.sh</entrypoint>
+                    </container>
+                    <extraDirectories>
+                        <permissions>
+                            <permission>
+                                <file>/entrypoint.sh</file>
+                                <mode>555</mode>
+                            </permission>
+                        </permissions>
+                    </extraDirectories>
+                </configuration>
+            </plugin>
         </plugins>
     </build>
 </project>
