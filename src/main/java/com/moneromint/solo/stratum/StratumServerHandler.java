@@ -36,6 +36,17 @@ public class StratumServerHandler extends ChannelInboundHandlerAdapter {
     }
 
     private void login(ChannelHandlerContext ctx, StratumRequest<StratumLoginParams> request) {
+        if (miner != null) {
+            ctx.writeAndFlush(Map.of(
+                    "id", request.getId(),
+                    "error", Map.of(
+                            "code", -1,
+                            "message", "Already authenticated"
+                    )
+            ));
+            return;
+        }
+
         LOGGER.trace("login login={} pass={}", request.getParams().getLogin(), request.getParams().getPass());
 
         miner = Miner.create(request.getParams().getLogin(), request.getParams().getPass());
@@ -63,7 +74,16 @@ public class StratumServerHandler extends ChannelInboundHandlerAdapter {
     }
 
     private void submit(ChannelHandlerContext ctx, StratumRequest<StratumSubmitParams> request) {
-        // TODO: Check that miner is authenticated.
+        if (miner == null) {
+            ctx.writeAndFlush(Map.of(
+                    "id", request.getId(),
+                    "error", Map.of(
+                            "code", -1,
+                            "message", "Unauthenticated"
+                    )
+            ));
+            return;
+        }
 
         final byte[] result;
         final byte[] nonce;
