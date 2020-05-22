@@ -5,13 +5,19 @@ import java.util.Objects;
 public class StratumLoginParams extends StratumRequestParams {
     private String login;
     private String pass;
+    private String agent;
 
     public StratumLoginParams() {
     }
 
-    public StratumLoginParams(String login, String pass) {
+    public StratumLoginParams(String login, String pass, String agent) {
         this.login = login;
         this.pass = pass;
+        this.agent = agent;
+    }
+
+    public StratumLoginParams(String login, String pass) {
+        this(login, pass, null);
     }
 
     public String getLogin() {
@@ -28,6 +34,14 @@ public class StratumLoginParams extends StratumRequestParams {
 
     public void setPass(String pass) {
         this.pass = pass;
+    }
+
+    public String getAgent() {
+        return agent;
+    }
+
+    public void setAgent(String agent) {
+        this.agent = agent;
     }
 
     @Override

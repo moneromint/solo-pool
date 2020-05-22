@@ -47,7 +47,10 @@ public class StratumServerHandler extends ChannelInboundHandlerAdapter {
             return;
         }
 
-        LOGGER.trace("login login={} pass={}", request.getParams().getLogin(), request.getParams().getPass());
+        LOGGER.trace("login login={} pass={} agent={}",
+                request.getParams().getLogin(),
+                request.getParams().getPass(),
+                request.getParams().getAgent());
 
         miner = Miner.create(request.getParams().getLogin(), request.getParams().getPass());
         final var job = miner.createAndSetJob(blockTemplateUpdater.getLastBlockTemplate());
