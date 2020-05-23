@@ -26,9 +26,9 @@ public class ShareProcessor {
         final Difficulty shareDifficulty = Difficulty.ofShare(result);
 
         // If the share difficulty is greater than or equal to the network difficulty...
-        if (shareDifficulty.getDifficulty().compareTo(miner.getJob().getBlockTemplate().getDifficulty()) >= 0) {
-            LOGGER.info("Found block at height {}", miner.getJob().getHeight());
-            final var completedBlob = BlockTemplateUtils.withExtra(miner.getJob().getBlockTemplate(),
+        if (shareDifficulty.getDifficulty().compareTo(job.getBlockTemplate().getDifficulty()) >= 0) {
+            LOGGER.info("Found block at height {}", job.getHeight());
+            final var completedBlob = BlockTemplateUtils.withExtra(job.getBlockTemplate(),
                     Main.INSTANCE_ID, miner.getId(), nonce);
             daemon.submitBlock(completedBlob)
                     .thenRun(() -> {
@@ -42,16 +42,17 @@ public class ShareProcessor {
         }
 
         if (!job.getResults().add(result)) {
+            miner.addInvalidShare();
             return ShareStatus.DUPLICATE_RESULT;
         }
 
         // If the share difficulty is less than the job difficulty...
-        if (shareDifficulty.compareTo(miner.getJob().getDifficulty()) < 0) {
+        if (shareDifficulty.compareTo(job.getDifficulty()) < 0) {
+            miner.addInvalidShare();
             return ShareStatus.LOW_DIFFICULTY;
         }
 
-        // TODO: Increment valid share counter.
-
+        miner.addValidShare(job.getDifficulty());
         return ShareStatus.VALID;
     }
 
