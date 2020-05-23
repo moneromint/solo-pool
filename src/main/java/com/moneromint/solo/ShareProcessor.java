@@ -41,6 +41,10 @@ public class ShareProcessor {
                     });
         }
 
+        if (!job.getResults().add(result)) {
+            return ShareStatus.DUPLICATE_RESULT;
+        }
+
         // If the share difficulty is less than the job difficulty...
         if (shareDifficulty.compareTo(miner.getJob().getDifficulty()) < 0) {
             return ShareStatus.LOW_DIFFICULTY;
@@ -56,6 +60,11 @@ public class ShareProcessor {
          * The provided result hash does not match.
          */
         BAD_HASH,
+
+        /**
+         * This result hash has already been sent to the pool.
+         */
+        DUPLICATE_RESULT,
 
         /**
          * Failed to process the share for some reason, e.g. bad nonce or result length.
