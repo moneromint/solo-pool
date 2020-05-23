@@ -69,11 +69,13 @@ public class Main {
 
         final String wallet = properties.getProperty("com.moneromint.solo.wallet");
 
+        final var statsPrinter = new StatsPrinter(activeMiners::size);
         final var blockTemplateUpdater = new BlockTemplateUpdater(daemon, wallet, activeMiners);
-        final var updateScheduler = Executors.newScheduledThreadPool(1);
+        final var updateScheduler = Executors.newScheduledThreadPool(2);
         updateScheduler.scheduleAtFixedRate(blockTemplateUpdater::update, 0, 10, TimeUnit.SECONDS);
+        updateScheduler.scheduleAtFixedRate(statsPrinter::print, 60, 60, TimeUnit.SECONDS);
 
-        final var shareProcessor = new ShareProcessor(blockTemplateUpdater, daemon);
+        final var shareProcessor = new ShareProcessor(blockTemplateUpdater, daemon, statsPrinter);
 
         final var bootstrap = new ServerBootstrap();
         bootstrap.group(parentGroup, childGroup);
