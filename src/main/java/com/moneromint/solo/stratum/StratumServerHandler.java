@@ -37,13 +37,7 @@ public class StratumServerHandler extends ChannelInboundHandlerAdapter {
 
     private void login(ChannelHandlerContext ctx, StratumRequest<StratumLoginParams> request) {
         if (miner != null) {
-            ctx.writeAndFlush(Map.of(
-                    "id", request.getId(),
-                    "error", Map.of(
-                            "code", -1,
-                            "message", "Already authenticated"
-                    )
-            ));
+            sendError(ctx, request.getId(), "Already authenticated");
             return;
         }
 
@@ -54,13 +48,7 @@ public class StratumServerHandler extends ChannelInboundHandlerAdapter {
 
         if (request.getParams().getAgent() != null
                 && request.getParams().getAgent().contains("xmr-node-proxy")) {
-            ctx.writeAndFlush(Map.of(
-                    "id", request.getId(),
-                    "error", Map.of(
-                            "code", -1,
-                            "message", "xmr-node-proxy is not supported by this pool"
-                    )
-            ));
+            sendError(ctx, request.getId(), "xmr-node-proxy is not supported by this pool");
             ctx.close();
             return;
         }
@@ -68,36 +56,25 @@ public class StratumServerHandler extends ChannelInboundHandlerAdapter {
         miner = Miner.create(request.getParams().getLogin(), request.getParams().getPass());
         final var job = miner.createAndSetJob(blockTemplateUpdater.getLastBlockTemplate());
 
-        // TODO:
-        ctx.writeAndFlush(Map.of(
-                "id", request.getId(),
-                "result", Map.of(
-                        "result", "OK",
+        sendResponse(ctx, request.getId(), Map.of(
+                "result", "OK",
+                "id", miner.getId().toString(),
+                "job", Map.of(
+                        "blob", HexUtils.byteArrayToHexString(job.getBlob()),
+                        "job_id", job.getId().toString(),
+                        "target", job.getDifficulty().getHex(),
                         "id", miner.getId().toString(),
-                        "job", Map.of(
-                                "blob", HexUtils.byteArrayToHexString(job.getBlob()),
-                                "job_id", job.getId().toString(),
-                                "target", job.getDifficulty().getHex(),
-                                "id", miner.getId().toString(),
-                                "seed_hash", HexUtils.byteArrayToHexString(job.getSeedHash()),
-                                "height", job.getHeight(),
-                                "algo", "rx/0"
-                        )
-                )
-        ));
+                        "seed_hash", HexUtils.byteArrayToHexString(job.getSeedHash()),
+                        "height", job.getHeight(),
+                        "algo", "rx/0"
+                )));
 
         activeMiners.add(ctx.channel());
     }
 
     private void submit(ChannelHandlerContext ctx, StratumRequest<StratumSubmitParams> request) {
         if (miner == null) {
-            ctx.writeAndFlush(Map.of(
-                    "id", request.getId(),
-                    "error", Map.of(
-                            "code", -1,
-                            "message", "Unauthenticated"
-                    )
-            ));
+            sendError(ctx, request.getId(), "Unauthenticated");
             return;
         }
 
@@ -107,35 +84,19 @@ public class StratumServerHandler extends ChannelInboundHandlerAdapter {
             result = HexUtils.hexStringToByteArray(request.getParams().getResult());
             nonce = HexUtils.hexStringToByteArray(request.getParams().getNonce());
         } catch (HexUtils.InvalidHexStringException e) {
-            ctx.writeAndFlush(Map.of(
-                    "id", request.getId(),
-                    "error", Map.of(
-                            "code", -1,
-                            "message", "Malformed share"
-                    )
-            ));
+            sendError(ctx, request.getId(), "Malformed share");
             return;
         }
 
         var status = shareProcessor.processShare(miner, miner.getJob(), result, nonce);
 
         if (status != ShareProcessor.ShareStatus.VALID) {
-            ctx.writeAndFlush(Map.of(
-                    "id", request.getId(),
-                    "error", Map.of(
-                            "code", -1,
-                            // Add message field to status.
-                            "message", status.toString()
-                    )
-            ));
+            sendError(ctx, request.getId(), status.toString());
             return;
         }
 
-        ctx.writeAndFlush(Map.of(
-                "id", request.getId(),
-                "result", Map.of(
-                        "result", "OK"
-                )
+        sendResponse(ctx, request.getId(), Map.of(
+                "result", "OK"
         ));
     }
 
@@ -152,6 +113,23 @@ public class StratumServerHandler extends ChannelInboundHandlerAdapter {
                         "seed_hash", HexUtils.byteArrayToHexString(job.getSeedHash()),
                         "height", job.getHeight(),
                         "algo", "rx/0"
+                )
+        ));
+    }
+
+    private void sendResponse(ChannelHandlerContext ctx, Object id, Map<String, Object> result) {
+        ctx.writeAndFlush(Map.of(
+                "id", id,
+                "result", result
+        ));
+    }
+
+    private void sendError(ChannelHandlerContext ctx, Object id, String message) {
+        ctx.writeAndFlush(Map.of(
+                "id", id,
+                "result", Map.of(
+                        "code", -1,
+                        "message", message
                 )
         ));
     }
