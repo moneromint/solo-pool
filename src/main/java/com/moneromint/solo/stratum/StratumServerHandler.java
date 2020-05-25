@@ -127,7 +127,7 @@ public class StratumServerHandler extends ChannelInboundHandlerAdapter {
     private void sendError(ChannelHandlerContext ctx, Object id, String message) {
         ctx.writeAndFlush(Map.of(
                 "id", id,
-                "result", Map.of(
+                "error", Map.of(
                         "code", -1,
                         "message", message
                 )
