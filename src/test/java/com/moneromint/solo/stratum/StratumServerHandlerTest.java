@@ -10,15 +10,13 @@ import io.netty.channel.embedded.EmbeddedChannel;
 import io.netty.channel.group.ChannelGroup;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import uk.offtopica.monerorpc.daemon.BlockTemplate;
 import uk.offtopica.monerorpc.daemon.MoneroDaemonRpcClient;
 
-import java.math.BigInteger;
 import java.util.Map;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
-import static com.moneromint.solo.utils.HexUtils.hexStringToByteArray;
+import static com.moneromint.solo.TestData.BLOCK_TEMPLATE_1;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
@@ -64,24 +62,7 @@ class StratumServerHandlerTest {
         // Should be unauthenticated at the start of the connection.
         assertNull(miner.get());
 
-        when(blockTemplateUpdater.getLastBlockTemplate()).thenReturn(new BlockTemplate(
-                hexStringToByteArray(
-                        "0c0cd1cfaff605a1ff51bc50c7abc5080e4486d030f481d3a0dcf92bb18a4f7631263c6d46793c0000000002c4ef" +
-                                "5901ff88ef5901cee7c5cd8570024b1546daf7db876f0b667f71d551b470837e82fe901db7ff1cdcc002" +
-                                "95d100483301b615c5edd8011343b78c24027d50fec05cf7a7f88461a7051a6334e16a2126e602100000" +
-                                "00000000000000000000000000000000"),
-                hexStringToByteArray(
-                        "0c0cd1cfaff605a1ff51bc50c7abc5080e4486d030f481d3a0dcf92bb18a4f7631263c6d46793c00000000b85f07" +
-                                "53843ce95299e2fd753c88e13eec4043a33b3264ed3ec887f7b36a9aa201"),
-                BigInteger.valueOf(540600L),
-                3849795498958L,
-                1472392L,
-                null,
-                hexStringToByteArray("a1ff51bc50c7abc5080e4486d030f481d3a0dcf92bb18a4f7631263c6d46793c"),
-                128,
-                hexStringToByteArray("d8ce0beb10924668542d7b08ed99a9d5e71fe829d6853f38e465715c28cc905e"),
-                1470464L
-        ));
+        when(blockTemplateUpdater.getLastBlockTemplate()).thenReturn(BLOCK_TEMPLATE_1);
 
         // Miner sends login request...
         chan.writeInbound(new StratumRequest<>("0", new StratumLoginParams("x", "x", "XMRig/1.2.3.4")));
