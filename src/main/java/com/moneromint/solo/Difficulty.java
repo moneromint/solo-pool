@@ -38,14 +38,14 @@ public class Difficulty implements Comparable<Difficulty> {
     }
 
     public static Difficulty ofShare(byte[] hash) {
-        for (int i = 0; i < hash.length / 2; i++) {
-            byte tmp = hash[i];
-            hash[i] = hash[hash.length - i - 1];
-            hash[hash.length - i - 1] = tmp;
+        byte[] reversed = hash.clone();
+        for (int i = 0; i < reversed.length / 2; i++) {
+            byte tmp = reversed[i];
+            reversed[i] = reversed[reversed.length - i - 1];
+            reversed[reversed.length - i - 1] = tmp;
         }
-        return new Difficulty(BASE.divide(new BigInteger(1, hash)));
+        return new Difficulty(BASE.divide(new BigInteger(1, reversed)));
     }
-
 
     @Override
     public boolean equals(Object o) {
