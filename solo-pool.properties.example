@@ -1,3 +1,4 @@
 com.moneromint.solo.daemon=http://127.0.0.1:18081/json_rpc
+com.moneromint.solo.http.port=8000
 com.moneromint.solo.port=3333
 com.moneromint.solo.wallet=41fJjQDhryD11111111111111111111111111111111112N1GuTZeagfRbbKcALdcZev4QXGGuoLh2x36LhaxLSxCc2YDhi

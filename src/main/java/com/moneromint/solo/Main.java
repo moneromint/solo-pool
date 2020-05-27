@@ -1,5 +1,6 @@
 package com.moneromint.solo;
 
+import com.moneromint.solo.http.HttpChannelInitializer;
 import com.moneromint.solo.stratum.StratumChannelInitializer;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.ChannelOption;
@@ -77,15 +78,27 @@ public class Main {
 
         final var shareProcessor = new ShareProcessor(blockTemplateUpdater, daemon, globalStats);
 
-        final var bootstrap = new ServerBootstrap();
-        bootstrap.group(parentGroup, childGroup);
-        bootstrap.option(ChannelOption.SO_BACKLOG, 128);
-        bootstrap.channel(channelClass);
-        bootstrap.childHandler(new StratumChannelInitializer<>(activeMiners, blockTemplateUpdater, shareProcessor));
-        bootstrap.childOption(ChannelOption.SO_KEEPALIVE, true);
+        final var httpBootstrap = new ServerBootstrap();
+        httpBootstrap.group(parentGroup, childGroup);
+        httpBootstrap.option(ChannelOption.SO_BACKLOG, 128);
+        httpBootstrap.channel(channelClass);
+        httpBootstrap.childHandler(new HttpChannelInitializer<>(blockTemplateUpdater, globalStats));
+        httpBootstrap.childOption(ChannelOption.SO_KEEPALIVE, true);
+        final int httpPort = Integer.parseInt(properties.getProperty("com.moneromint.solo.http.port"));
+        LOGGER.info("HTTP binding on *:{}", httpPort);
+        // Don't block. If stratum server dies, HTTP server should die too.
+        httpBootstrap.bind(httpPort);
 
-        final int port = Integer.parseInt(properties.getProperty("com.moneromint.solo.port"));
-        LOGGER.info("Binding on *:{}", port);
-        bootstrap.bind(port).channel().closeFuture().sync();
+        final var stratumBootstrap = new ServerBootstrap();
+        stratumBootstrap.group(parentGroup, childGroup);
+        stratumBootstrap.option(ChannelOption.SO_BACKLOG, 128);
+        stratumBootstrap.channel(channelClass);
+        stratumBootstrap.childHandler(new StratumChannelInitializer<>(activeMiners, blockTemplateUpdater,
+                shareProcessor));
+        stratumBootstrap.childOption(ChannelOption.SO_KEEPALIVE, true);
+
+        final int stratumPort = Integer.parseInt(properties.getProperty("com.moneromint.solo.port"));
+        LOGGER.info("Stratum binding on *:{}", stratumPort);
+        stratumBootstrap.bind(stratumPort).channel().closeFuture().sync();
     }
 }

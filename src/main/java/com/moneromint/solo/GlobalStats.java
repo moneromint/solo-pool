@@ -17,10 +17,12 @@ public class GlobalStats {
     private final CircularBuffer<ImmutablePair<Instant, BigInteger>> recentShares;
     private long validShares;
     private long invalidShares;
+    private BigInteger totalHashes;
 
     public GlobalStats(Supplier<Integer> connectionCount) {
         this.connectionCount = connectionCount;
         recentShares = new CircularBuffer<>(60);
+        totalHashes = BigInteger.ZERO;
     }
 
     public BigInteger estimateHashrate() {
@@ -49,10 +51,27 @@ public class GlobalStats {
     public void addValidShare(Difficulty difficulty) {
         recentShares.add(new ImmutablePair<>(Instant.now(), difficulty.getDifficulty()));
         validShares++;
+        totalHashes = totalHashes.add(difficulty.getDifficulty());
     }
 
     public void addInvalidShare() {
         invalidShares++;
+    }
+
+    public int getConnectionCount() {
+        return connectionCount.get();
+    }
+
+    public long getValidShares() {
+        return validShares;
+    }
+
+    public long getInvalidShares() {
+        return invalidShares;
+    }
+
+    public BigInteger getTotalHashes() {
+        return totalHashes;
     }
 
     public void print() {

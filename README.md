@@ -13,7 +13,9 @@ docker run \
     -e SOLOPOOL_DAEMON=http://1.2.3.4:18081/json_rpc \
     -e SOLOPOOL_WALLET=YOUR_WALLET_ADDRESS_HERE \
     -e SOLOPOOL_PORT=3000 \
+    -e SOLOPOOL_HTTP_PORT=8000 \
     -p 3000:3000 \
+    -p 8000:8000 \
     moneromint/solo-pool
 ```
 
