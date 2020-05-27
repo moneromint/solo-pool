@@ -15,6 +15,7 @@ public class GlobalStats {
 
     private final Supplier<Integer> connectionCount;
     private final CircularBuffer<ImmutablePair<Instant, BigInteger>> recentShares;
+    private long blocksFound;
     private long validShares;
     private long invalidShares;
     private BigInteger totalHashes;
@@ -48,6 +49,10 @@ public class GlobalStats {
         return count.divide(BigInteger.valueOf(timespent));
     }
 
+    public void addBlock() {
+        blocksFound++;
+    }
+
     public void addValidShare(Difficulty difficulty) {
         recentShares.add(new ImmutablePair<>(Instant.now(), difficulty.getDifficulty()));
         validShares++;
@@ -56,6 +61,10 @@ public class GlobalStats {
 
     public void addInvalidShare() {
         invalidShares++;
+    }
+
+    public long getBlocksFound() {
+        return blocksFound;
     }
 
     public int getConnectionCount() {

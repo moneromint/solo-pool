@@ -28,8 +28,15 @@ public class HttpServerHandler extends ChannelInboundHandlerAdapter {
 
     private HttpResponse handleMetrics(HttpRequest request) {
         String body =
-                // Write connection count.
-                "# HELP stratum_connections_count The total number of connections to the stratum server.\n" +
+                // Write blocks found.
+                "# HELP stratum_blocks_found Total number of blocks found by the pool.\n" +
+                        "# TYPE stratum_blocks_found counter\n" +
+                        "stratum_blocks_found " +
+                        globalStats.getBlocksFound() +
+                        "\n\n" +
+
+                        // Write connection count.
+                        "# HELP stratum_connections_count The total number of connections to the stratum server.\n" +
                         "# TYPE stratum_connections_count gauge\n" +
                         "stratum_connections_count " +
                         globalStats.getConnectionCount() +

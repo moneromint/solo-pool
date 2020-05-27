@@ -37,6 +37,7 @@ public class ShareProcessor {
                     .thenRun(() -> {
                         LOGGER.trace("Successfully submitted block!");
                         blockTemplateUpdater.update();
+                        globalStats.addBlock();
                     })
                     .exceptionally(e -> {
                         LOGGER.error("Failed to submit block", e);
