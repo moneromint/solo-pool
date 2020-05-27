@@ -27,7 +27,7 @@ public class HttpServerHandler extends ChannelInboundHandlerAdapter {
     }
 
     private HttpResponse handleMetrics(HttpRequest request) {
-        String response =
+        String body =
                 // Write connection count.
                 "# HELP stratum_connections_count The total number of connections to the stratum server.\n" +
                         "# TYPE stratum_connections_count gauge\n" +
@@ -54,9 +54,13 @@ public class HttpServerHandler extends ChannelInboundHandlerAdapter {
                         "stratum_hashes_total " +
                         globalStats.getTotalHashes().toString(10) +
                         '\n';
-        final var buf = Unpooled.wrappedBuffer(response.getBytes(CharsetUtil.UTF_8));
+        final var buf = Unpooled.wrappedBuffer(body.getBytes(CharsetUtil.UTF_8));
 
-        return new DefaultFullHttpResponse(request.protocolVersion(), HttpResponseStatus.OK, buf);
+        final var response = new DefaultFullHttpResponse(request.protocolVersion(), HttpResponseStatus.OK, buf);
+
+        response.headers().set("Content-Type", "text/plain; version=0.0.4");
+
+        return response;
     }
 
     private HttpResponse handleRequest(HttpRequest request) {
