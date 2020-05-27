@@ -10,15 +10,15 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.function.Supplier;
 
-public class StatsPrinter {
-    private static final Logger LOGGER = LoggerFactory.getLogger(StatsPrinter.class);
+public class GlobalStats {
+    private static final Logger LOGGER = LoggerFactory.getLogger(GlobalStats.class);
 
     private final Supplier<Integer> connectionCount;
     private final CircularBuffer<ImmutablePair<Instant, BigInteger>> recentShares;
     private long validShares;
     private long invalidShares;
 
-    public StatsPrinter(Supplier<Integer> connectionCount) {
+    public GlobalStats(Supplier<Integer> connectionCount) {
         this.connectionCount = connectionCount;
         recentShares = new CircularBuffer<>(60);
     }

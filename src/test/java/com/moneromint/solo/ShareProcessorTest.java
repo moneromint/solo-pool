@@ -13,14 +13,14 @@ class ShareProcessorTest {
     ShareProcessor shareProcessor;
     BlockTemplateUpdater blockTemplateUpdater;
     MoneroDaemonRpcClient daemon;
-    StatsPrinter statsPrinter;
+    GlobalStats globalStats;
 
     @BeforeEach
     void setup() {
         blockTemplateUpdater = mock(BlockTemplateUpdater.class);
         daemon = mock(MoneroDaemonRpcClient.class);
-        statsPrinter = mock(StatsPrinter.class);
-        shareProcessor = new ShareProcessor(blockTemplateUpdater, daemon, statsPrinter);
+        globalStats = mock(GlobalStats.class);
+        shareProcessor = new ShareProcessor(blockTemplateUpdater, daemon, globalStats);
     }
 
     @Test
@@ -38,7 +38,7 @@ class ShareProcessorTest {
         assertEquals(ShareProcessor.ShareStatus.VALID, result);
         assertTrue(job.getResults().contains(RESULT_1));
         verify(miner).addValidShare(job.getDifficulty());
-        verify(statsPrinter).addValidShare(job.getDifficulty());
+        verify(globalStats).addValidShare(job.getDifficulty());
         verify(daemon, never()).submitBlock(any());
     }
 
@@ -55,6 +55,6 @@ class ShareProcessorTest {
 
         assertEquals(ShareProcessor.ShareStatus.LOW_DIFFICULTY, result);
         verify(miner).addInvalidShare();
-        verify(statsPrinter).addInvalidShare();
+        verify(globalStats).addInvalidShare();
     }
 }

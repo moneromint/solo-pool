@@ -3,7 +3,7 @@ package com.moneromint.solo.stratum;
 import com.moneromint.solo.BlockTemplateUpdater;
 import com.moneromint.solo.Miner;
 import com.moneromint.solo.ShareProcessor;
-import com.moneromint.solo.StatsPrinter;
+import com.moneromint.solo.GlobalStats;
 import com.moneromint.solo.stratum.message.StratumLoginParams;
 import com.moneromint.solo.stratum.message.StratumRequest;
 import io.netty.channel.embedded.EmbeddedChannel;
@@ -35,7 +35,7 @@ class StratumServerHandlerTest {
         activeMiners = mock(ChannelGroup.class);
         blockTemplateUpdater = mock(BlockTemplateUpdater.class);
         daemon = mock(MoneroDaemonRpcClient.class);
-        shareProcessor = spy(new ShareProcessor(blockTemplateUpdater, daemon, mock(StatsPrinter.class)));
+        shareProcessor = spy(new ShareProcessor(blockTemplateUpdater, daemon, mock(GlobalStats.class)));
         handler = new StratumServerHandler(activeMiners, blockTemplateUpdater, shareProcessor);
         chan = new EmbeddedChannel(handler);
 

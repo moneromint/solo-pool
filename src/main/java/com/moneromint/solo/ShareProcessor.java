@@ -10,13 +10,13 @@ public class ShareProcessor {
 
     private final BlockTemplateUpdater blockTemplateUpdater;
     private final MoneroDaemonRpcClient daemon;
-    private final StatsPrinter statsPrinter;
+    private final GlobalStats globalStats;
 
     public ShareProcessor(BlockTemplateUpdater blockTemplateUpdater, MoneroDaemonRpcClient daemon,
-                          StatsPrinter statsPrinter) {
+                          GlobalStats globalStats) {
         this.blockTemplateUpdater = blockTemplateUpdater;
         this.daemon = daemon;
-        this.statsPrinter = statsPrinter;
+        this.globalStats = globalStats;
     }
 
     public ShareStatus processShare(Miner miner, Job job, byte[] result, byte[] nonce) {
@@ -46,19 +46,19 @@ public class ShareProcessor {
 
         if (!job.getResults().add(result)) {
             miner.addInvalidShare();
-            statsPrinter.addInvalidShare();
+            globalStats.addInvalidShare();
             return ShareStatus.DUPLICATE_RESULT;
         }
 
         // If the share difficulty is less than the job difficulty...
         if (shareDifficulty.compareTo(job.getDifficulty()) < 0) {
             miner.addInvalidShare();
-            statsPrinter.addInvalidShare();
+            globalStats.addInvalidShare();
             return ShareStatus.LOW_DIFFICULTY;
         }
 
         miner.addValidShare(job.getDifficulty());
-        statsPrinter.addValidShare(job.getDifficulty());
+        globalStats.addValidShare(job.getDifficulty());
         return ShareStatus.VALID;
     }
 
