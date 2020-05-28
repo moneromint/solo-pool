@@ -27,7 +27,7 @@ public class GlobalStats {
     }
 
     public BigInteger estimateHashrate() {
-        if (validShares == 0) {
+        if (validShares <= 1) {
             return BigInteger.ZERO;
         }
 
