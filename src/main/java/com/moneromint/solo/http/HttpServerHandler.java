@@ -92,6 +92,7 @@ public class HttpServerHandler extends ChannelInboundHandlerAdapter {
 
         if (request.method() == HttpMethod.GET) {
             final var content = Map.of(
+                    "blocksFound", globalStats.getBlocksFound(),
                     "connections", globalStats.getConnectionCount(),
                     "hashrate", globalStats.estimateHashrate().longValue(),
                     "validShares", globalStats.getValidShares(),
@@ -113,6 +114,32 @@ public class HttpServerHandler extends ChannelInboundHandlerAdapter {
         return response;
     }
 
+    private HttpResponse handleStaticFile(HttpMethod method, String uri) throws IOException {
+        final ByteBuf buf;
+
+        if (method == HttpMethod.GET) {
+            try (var is = HttpServerHandler.class.getResourceAsStream(uri.substring(1))) {
+                buf = Unpooled.wrappedBuffer(is.readAllBytes());
+            }
+        } else {
+            buf = Unpooled.buffer(0);
+        }
+
+        final var response = new DefaultFullHttpResponse(HttpVersion.HTTP_1_1, HttpResponseStatus.OK, buf);
+
+        final var parts = uri.split("\\.");
+        final var ext = parts[parts.length - 1];
+        final var contentType = switch (ext) {
+            case "html" -> "text/html; charset=utf-8";
+            case "css" -> "text/css; charset=utf-8";
+            case "js" -> "application/javascript; charset=utf-8";
+            default -> "application/octet-stream";
+        };
+        response.headers().set("Content-Type", contentType);
+
+        return response;
+    }
+
     private HttpResponse handleRequest(HttpRequest request) throws IOException {
         if (request.method() != HttpMethod.GET && request.method() != HttpMethod.HEAD) {
             return new DefaultFullHttpResponse(request.protocolVersion(), HttpResponseStatus.METHOD_NOT_ALLOWED);
@@ -122,6 +149,8 @@ public class HttpServerHandler extends ChannelInboundHandlerAdapter {
             case "/-/fetchtemplate" -> handleFetchTemplate(request);
             case "/metrics" -> handleMetrics(request);
             case "/stats.json" -> handleStatsJson(request);
+            case "/" -> handleStaticFile(request.method(), "/index.html");
+            case "/index.html", "/index.js", "/solo-pool.css" -> handleStaticFile(request.method(), request.uri());
             default -> new DefaultFullHttpResponse(request.protocolVersion(), HttpResponseStatus.NOT_FOUND);
         };
     }
