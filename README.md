@@ -19,6 +19,13 @@ docker run \
     moneromint/solo-pool
 ```
 
+## Deployment With docker-compose
+
+An example deployment of solo-pool, Prometheus, and Grafana is
+available in the
+[moneromint/solo-pool-deployment](https://github.com/moneromint/solo-pool-deployment)
+repository.
+
 ## License
 
 The code in this repository is released under the terms of the MIT license.
