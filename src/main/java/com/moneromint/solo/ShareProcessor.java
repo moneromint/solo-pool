@@ -19,9 +19,13 @@ public class ShareProcessor {
         this.globalStats = globalStats;
     }
 
-    public ShareStatus processShare(Miner miner, Job job, byte[] result, byte[] nonce) {
+    public ShareStatus processShare(Miner miner, Job job, byte[] result, byte[] nonce, String jobId) {
         if (result.length != 32 || nonce.length != 4) {
             return ShareStatus.INVALID;
+        }
+
+        if (!job.getId().toString().equals(jobId)) {
+            return ShareStatus.STALE;
         }
 
         // TODO: Validate result hash.
@@ -83,6 +87,11 @@ public class ShareProcessor {
          * The provided share's difficulty was lower than the job difficulty.
          */
         LOW_DIFFICULTY,
+
+        /**
+         * The submissions job id did not match the id of the current job.
+         */
+        STALE,
 
         /**
          * The share was valid.

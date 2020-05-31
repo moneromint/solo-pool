@@ -78,6 +78,7 @@ public class StratumServerHandler extends ChannelInboundHandlerAdapter {
             return;
         }
 
+        final String jobId = request.getParams().getJobId();
         final byte[] result;
         final byte[] nonce;
         try {
@@ -88,7 +89,7 @@ public class StratumServerHandler extends ChannelInboundHandlerAdapter {
             return;
         }
 
-        var status = shareProcessor.processShare(miner, miner.getJob(), result, nonce);
+        var status = shareProcessor.processShare(miner, miner.getJob(), result, nonce, jobId);
 
         if (status != ShareProcessor.ShareStatus.VALID) {
             sendError(ctx, request.getId(), status.toString());

@@ -33,7 +33,7 @@ class ShareProcessorTest {
         when(blockTemplateUpdater.getLastBlockTemplate()).thenReturn(BLOCK_TEMPLATE_1);
 
         // Submit a valid share. Result not good enough to be a block.
-        ShareProcessor.ShareStatus result = shareProcessor.processShare(miner, job, RESULT_1, NONCE_1);
+        ShareProcessor.ShareStatus result = shareProcessor.processShare(miner, job, RESULT_1, NONCE_1, job.getId().toString());
 
         assertEquals(ShareProcessor.ShareStatus.VALID, result);
         assertTrue(job.getResults().contains(RESULT_1));
@@ -51,7 +51,7 @@ class ShareProcessorTest {
 
         when(blockTemplateUpdater.getLastBlockTemplate()).thenReturn(BLOCK_TEMPLATE_1);
 
-        ShareProcessor.ShareStatus result = shareProcessor.processShare(miner, job, RESULT_1, NONCE_1);
+        ShareProcessor.ShareStatus result = shareProcessor.processShare(miner, job, RESULT_1, NONCE_1, job.getId().toString());
 
         assertEquals(ShareProcessor.ShareStatus.LOW_DIFFICULTY, result);
         verify(miner).addInvalidShare();
