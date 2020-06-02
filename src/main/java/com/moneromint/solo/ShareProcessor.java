@@ -21,10 +21,14 @@ public class ShareProcessor {
 
     public ShareStatus processShare(Miner miner, Job job, byte[] result, byte[] nonce, String jobId) {
         if (result.length != 32 || nonce.length != 4) {
+            miner.addInvalidShare();
+            globalStats.addInvalidShare();
             return ShareStatus.INVALID;
         }
 
         if (!job.getId().toString().equals(jobId)) {
+            miner.addInvalidShare();
+            globalStats.addInvalidShare();
             return ShareStatus.STALE;
         }
 
