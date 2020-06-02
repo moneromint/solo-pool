@@ -24,6 +24,21 @@ public class TestData {
     public static final byte[] NONCE_1;
 
     /**
+     * A submission for BLOCK_TEMPLATE_2. Good enough to be a block.
+     */
+    public static final byte[] RESULT_2;
+
+    /**
+     * Block template blob with nonce 2 copied in.
+     */
+    public static final byte[] RESULT_2_BLOB;
+
+    /**
+     * Nonce to go with RESULT_1.
+     */
+    public static final byte[] NONCE_2;
+
+    /**
      * A testnet block template that comes after BLOCK_TEMPLATE_2.
      */
     public static final BlockTemplate BLOCK_TEMPLATE_2;
@@ -50,6 +65,13 @@ public class TestData {
             );
             RESULT_1 = hexStringToByteArray("a5c845cbf40ab5cd8793a134a6d81d99cec82dbf0d83f96edde2293e1b100700");
             NONCE_1 = hexStringToByteArray("f0030000");
+            RESULT_2 = hexStringToByteArray("f8bee4befae4a11ee87a5462b825e4d8cb7320f9ba6579231998c935e6080000");
+            RESULT_2_BLOB = hexStringToByteArray(
+                    "0c0cd1cfaff605a1ff51bc50c7abc5080e4486d030f481d3a0dcf92bb18a4f7631263c6d46793c0d3a0e0002c4ef5901ff88" +
+                            "ef5901cee7c5cd8570024b1546daf7db876f0b667f71d551b470837e82fe901db7ff1cdcc00295d100483301b615" +
+                            "c5edd8011343b78c24027d50fec05cf7a7f88461a7051a6334e16a2126e602100000000000000000a10c16e4276b" +
+                            "50a60000");
+            NONCE_2 = hexStringToByteArray("0d3a0e00");
 
             BLOCK_TEMPLATE_2 = new BlockTemplate(
                     hexStringToByteArray(
