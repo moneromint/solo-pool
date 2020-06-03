@@ -4,6 +4,7 @@ import com.moneromint.solo.utils.BlockTemplateUtils;
 import io.netty.channel.group.ChannelGroup;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import uk.offtopica.monerorpc.MoneroRpcException;
 import uk.offtopica.monerorpc.daemon.BlockTemplate;
 import uk.offtopica.monerorpc.daemon.MoneroDaemonRpcClient;
 
@@ -37,7 +38,11 @@ public class BlockTemplateUpdater {
                 }
             }
         }).exceptionally(e -> {
-            LOGGER.error("Failed to fetch block template", e);
+            if (e instanceof MoneroRpcException && e.getMessage().contains("Core is busy")) {
+                LOGGER.info("Failed to fetch block template; daemon busy");
+            } else {
+                LOGGER.error("Failed to fetch block template", e);
+            }
             return null;
         });
     }
