@@ -73,7 +73,8 @@ public class Main {
         final var globalStats = new GlobalStats(activeMiners::size);
         final var blockTemplateUpdater = new BlockTemplateUpdater(daemon, wallet, activeMiners);
         final var updateScheduler = Executors.newScheduledThreadPool(2);
-        updateScheduler.scheduleAtFixedRate(blockTemplateUpdater::update, 0, 10, TimeUnit.SECONDS);
+        final int pollInterval = Integer.parseInt(properties.getProperty("com.moneromint.solo.daemon.poll-interval"));
+        updateScheduler.scheduleAtFixedRate(blockTemplateUpdater::update, 0, pollInterval, TimeUnit.SECONDS);
         updateScheduler.scheduleAtFixedRate(globalStats::print, 60, 60, TimeUnit.SECONDS);
 
         final var shareProcessor = new ShareProcessor(blockTemplateUpdater, daemon, globalStats);
