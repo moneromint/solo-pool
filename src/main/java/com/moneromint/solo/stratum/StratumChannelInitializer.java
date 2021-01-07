@@ -11,7 +11,7 @@ import io.netty.handler.timeout.IdleStateHandler;
 
 public class StratumChannelInitializer<T extends SocketChannel> extends ChannelInitializer<T> {
     // Needs to be quite long because XMRig sends a bunch of garbage about supported algos on login.
-    private static final int LINE_MAX = 512;
+    private static final int LINE_MAX = 2048;
 
     private final ChannelGroup activeMiners;
     private final BlockTemplateUpdater blockTemplateUpdater;
