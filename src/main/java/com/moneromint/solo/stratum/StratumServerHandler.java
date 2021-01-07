@@ -115,7 +115,7 @@ public class StratumServerHandler extends ChannelInboundHandlerAdapter {
                         "id", miner.getId().toString(),
                         "seed_hash", HexUtils.byteArrayToHexString(job.getSeedHash()),
                         "height", job.getHeight(),
-                        "algo", "rx/0"
+                        "algo", algo
                 )
         ));
     }
