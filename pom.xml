@@ -9,8 +9,8 @@
     <version>0.1.0-SNAPSHOT</version>
 
     <properties>
-        <maven.compiler.source>14</maven.compiler.source>
-        <maven.compiler.target>14</maven.compiler.target>
+        <maven.compiler.source>15</maven.compiler.source>
+        <maven.compiler.target>15</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
 
@@ -141,7 +141,7 @@
                         <image>moneromint/solo-pool</image>
                     </to>
                     <from>
-                        <image>openjdk:14</image>
+                        <image>openjdk:15</image>
                     </from>
                     <container>
                         <entrypoint>/entrypoint.sh</entrypoint>
