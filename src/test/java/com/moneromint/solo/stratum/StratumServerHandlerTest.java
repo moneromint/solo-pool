@@ -36,7 +36,7 @@ class StratumServerHandlerTest {
         blockTemplateUpdater = mock(BlockTemplateUpdater.class);
         daemon = mock(MoneroDaemonRpcClient.class);
         shareProcessor = spy(new ShareProcessor(blockTemplateUpdater, daemon, mock(GlobalStats.class)));
-        handler = new StratumServerHandler(activeMiners, blockTemplateUpdater, shareProcessor);
+        handler = new StratumServerHandler(activeMiners, blockTemplateUpdater, shareProcessor, "rx/0");
         chan = new EmbeddedChannel(handler);
 
         final var minerField = StratumServerHandler.class.getDeclaredField("miner");

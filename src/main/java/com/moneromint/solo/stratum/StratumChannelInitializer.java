@@ -16,12 +16,14 @@ public class StratumChannelInitializer<T extends SocketChannel> extends ChannelI
     private final ChannelGroup activeMiners;
     private final BlockTemplateUpdater blockTemplateUpdater;
     private final ShareProcessor shareProcessor;
+    private final String algo;
 
     public StratumChannelInitializer(ChannelGroup activeMiners, BlockTemplateUpdater blockTemplateUpdater,
-                                     ShareProcessor shareProcessor) {
+                                     ShareProcessor shareProcessor, String algo) {
         this.activeMiners = activeMiners;
         this.blockTemplateUpdater = blockTemplateUpdater;
         this.shareProcessor = shareProcessor;
+        this.algo = algo;
     }
 
     @Override
@@ -34,6 +36,6 @@ public class StratumChannelInitializer<T extends SocketChannel> extends ChannelI
         p.addLast(new NdjsonMessageEncoder());
 
         p.addLast(new IdleStateHandler(0, 0, 300));
-        p.addLast(new StratumServerHandler(activeMiners, blockTemplateUpdater, shareProcessor));
+        p.addLast(new StratumServerHandler(activeMiners, blockTemplateUpdater, shareProcessor, algo));
     }
 }

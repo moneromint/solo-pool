@@ -29,6 +29,8 @@ public class Main {
     // TODO:
     public static final Long INSTANCE_ID = 0L;
 
+    private static final String ALGO_DEFAULT = "rx/0";
+
     private static final Logger LOGGER = LoggerFactory.getLogger(Main.class);
 
     public static void main(String[] args) throws InterruptedException {
@@ -90,12 +92,13 @@ public class Main {
         // Don't block. If stratum server dies, HTTP server should die too.
         httpBootstrap.bind(httpPort);
 
+        final String algo = properties.getProperty("com.moneromint.solo.algo", ALGO_DEFAULT);
         final var stratumBootstrap = new ServerBootstrap();
         stratumBootstrap.group(parentGroup, childGroup);
         stratumBootstrap.option(ChannelOption.SO_BACKLOG, 128);
         stratumBootstrap.channel(channelClass);
         stratumBootstrap.childHandler(new StratumChannelInitializer<>(activeMiners, blockTemplateUpdater,
-                shareProcessor));
+                shareProcessor, algo));
         stratumBootstrap.childOption(ChannelOption.SO_KEEPALIVE, true);
 
         final int stratumPort = Integer.parseInt(properties.getProperty("com.moneromint.solo.port"));

@@ -25,14 +25,16 @@ public class StratumServerHandler extends ChannelInboundHandlerAdapter {
     private final ChannelGroup activeMiners;
     private final BlockTemplateUpdater blockTemplateUpdater;
     private final ShareProcessor shareProcessor;
+    private final String algo;
 
     private Miner miner;
 
     public StratumServerHandler(ChannelGroup activeMiners, BlockTemplateUpdater blockTemplateUpdater,
-                                ShareProcessor shareProcessor) {
+                                ShareProcessor shareProcessor, String algo) {
         this.activeMiners = activeMiners;
         this.blockTemplateUpdater = blockTemplateUpdater;
         this.shareProcessor = shareProcessor;
+        this.algo = algo;
     }
 
     private void login(ChannelHandlerContext ctx, StratumRequest<StratumLoginParams> request) {
@@ -66,7 +68,7 @@ public class StratumServerHandler extends ChannelInboundHandlerAdapter {
                         "id", miner.getId().toString(),
                         "seed_hash", HexUtils.byteArrayToHexString(job.getSeedHash()),
                         "height", job.getHeight(),
-                        "algo", "rx/0"
+                        "algo", algo
                 )));
 
         activeMiners.add(ctx.channel());

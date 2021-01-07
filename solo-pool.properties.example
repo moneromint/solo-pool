@@ -1,3 +1,4 @@
+com.moneromint.solo.algo=rx/0
 com.moneromint.solo.daemon=http://127.0.0.1:18081/json_rpc
 # Use a higher number (like 10) if you use --block-notify. Use a smaller number (like 2) otherwise.
 com.moneromint.solo.daemon.poll-interval=10
