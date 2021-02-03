@@ -1,5 +1,6 @@
 package com.moneromint.solo.stratum;
 
+import com.fasterxml.jackson.core.JsonParseException;
 import com.moneromint.solo.BlockTemplateUpdater;
 import com.moneromint.solo.Miner;
 import com.moneromint.solo.NewBlockTemplateEvent;
@@ -11,6 +12,7 @@ import com.moneromint.solo.utils.HexUtils;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.channel.group.ChannelGroup;
+import io.netty.handler.codec.DecoderException;
 import io.netty.handler.codec.TooLongFrameException;
 import io.netty.handler.timeout.IdleStateEvent;
 import org.slf4j.Logger;
@@ -183,7 +185,13 @@ public class StratumServerHandler extends ChannelInboundHandlerAdapter {
             return;
         }
 
-        LOGGER.error("Unhandled exception", cause);
+        if (cause.getCause() instanceof JsonParseException) {
+            ctx.close();
+            LOGGER.warn("Invalid JSON from {}", ctx.channel().remoteAddress());
+            return;
+        }
+
         ctx.close();
+        LOGGER.error("Unhandled exception", cause);
     }
 }
