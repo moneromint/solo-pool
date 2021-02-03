@@ -58,7 +58,7 @@ public class Miner {
             count = count.add(share.getRhs());
         }
 
-        long timespent = Duration.between(oldest, Instant.now()).getSeconds();
+        long timespent = Duration.between(oldest, Instant.now()).getSeconds() + 1;
 
         // count hashes performed in timespent seconds
         //  => hashrate = count / timespent

@@ -46,6 +46,10 @@ public class GlobalStats {
 
         long timespent = Duration.between(oldest, Instant.now()).getSeconds();
 
+        if (timespent == 0) {
+            return BigInteger.ZERO;
+        }
+
         return count.divide(BigInteger.valueOf(timespent));
     }
 
