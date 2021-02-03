@@ -22,7 +22,7 @@ public class GlobalStats {
 
     public GlobalStats(Supplier<Integer> connectionCount) {
         this.connectionCount = connectionCount;
-        recentShares = new CircularBuffer<>(60);
+        recentShares = new CircularBuffer<>(240);
         totalHashes = BigInteger.ZERO;
     }
 
